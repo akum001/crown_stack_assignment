@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style media="screen">
+      #form-submit{
+        margin-left: 65pt;
+        margin-top: 10pt;
+      }
+    </style>
+    <title></title>
+  </head>
+  <body>
+
+<div class="jumbotron" style="padding:54px;">
+<form method="POST" id="post-form">
+  {% csrf_token %}
+      <p id="latency-info" style="color:green;"></p>
+      <div class="row">
+        <div class="col col-sm-2">
+          <label for="exchange-from">Exchange From:</label>
+            <select name="exchange-from" id="exchange-1">
+              {% for c in currency %}
+              <option value="{{c.currency_code}}">{{c.currency_name}} ({{c.currency_code}})</option>
+              {% endfor %}
+            </select>
+        </div>
+        <div class="col col-sm-2">
+          <label for="exchange-to">Exchange To:</label>
+
+            <select name="exchange-to" id="exchange-2">
+              {% for c in currency %}
+              <option value="{{c.currency_code}}">{{c.currency_name}} ({{c.currency_code}})</option>
+              {% endfor %}
+            </select>
+        </div>
+
+
+      </div>
+      <p></p>
+      <div class="row">
+        <div class="col col-sm-2">
+          <label for="form-input">Input Amount:</label><br>
+          <input type="number" step="0.01" type="text" id="from-id" name="from-input">
+        </div>
+      </div>
+
+      <br>
+        <div class="row">
+          <div id="form-submit" class="col col-sm-2">
+            <input type="submit" name="" value="Submit">
+          </div>
+        </div>
+      <br>
+      <div class="row">
+        <div class="col col-sm-2">
+        <p id="converted-result"></p>
+        </div>
+      </div>
+ </form>
+ </div>
+
+
+      <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+
+      <script type="text/javascript">
+        $(document).on('submit', '#post-form', function(e){
+          e.preventDefault()
+          $(':input[type="submit"]').prop('disabled', true);
+          $("#latency-info").text('FYI!, Exchange Api is going to take longer than usual...')
+          $("#converted-result").text('')
+          var exchange_1 = $("#exchange-1 option:selected").val();
+          var exchange_2 = $("#exchange-2 option:selected").val();
+          var value_1 = $("#from-id").val();
+          console.log(exchange_1, exchange_2)
+
+          $.ajax({
+            type:'POST',
+            url:'/calculate_exchange',
+            data:{
+              "exchange_1":exchange_1,
+              "exchange_2":exchange_2,
+              "value_1":value_1,
+              csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+            },
+            success:function(data){
+              console.log(data)
+              $("#latency-info").text('');
+              $("#converted-result").text("Result - "+Math.round(data['result'],2));
+              $(':input[type="submit"]').prop('disabled', false);
+            }
+          })
+        });
+      </script>
+
+  </body>
+</html>
